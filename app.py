@@ -12,7 +12,7 @@ logging.basicConfig(filename=log_file, level=logging.DEBUG, format="%(asctime)s 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)  # Ensure Flask logs debug messages
 
-BURGER_PATH = "static/cleaned_burger.png"  # Path to the new transparent burger image
+BURGER_PATH = "static/cleaned_burger.png"  # Ensure this matches GitHub
 
 # Check if burger image exists at startup
 if not os.path.exists(BURGER_PATH):
@@ -25,9 +25,9 @@ else:
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=True, 
-    max_num_hands=6,  # Allow multiple hands
-    min_detection_confidence=0.05,  # Lower threshold for better detection
-    min_tracking_confidence=0.05
+    max_num_hands=2,  # Force detection of up to 2 hands
+    min_detection_confidence=0.01,  # Lower threshold for better detection
+    min_tracking_confidence=0.01
 )
 mp_draw = mp.solutions.drawing_utils
 
@@ -52,6 +52,9 @@ def overlay_burger(image, hand_landmarks):
         print(f"👉 Hand {i+1} detected at: Palm center ({palm_x}, {palm_y})", flush=True)
         logging.debug(f"Hand {i+1} detected at: Palm center ({palm_x}, {palm_y})")
 
+        # Draw a red circle at the palm center to debug burger placement
+        cv2.circle(image, (palm_x, palm_y), 15, (0, 0, 255), -1)
+
         h, w, _ = burger.shape
         y1, y2 = palm_y - h // 2, palm_y + h // 2
         x1, x2 = palm_x - w // 2, palm_x + w // 2
@@ -59,9 +62,6 @@ def overlay_burger(image, hand_landmarks):
         if 0 <= x1 < image.shape[1] and 0 <= x2 < image.shape[1] and 0 <= y1 < image.shape[0] and 0 <= y2 < image.shape[0]:
             print(f"✅ Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})", flush=True)
             logging.debug(f"Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})")
-
-            # Draw a red circle for debugging burger placement
-            cv2.circle(image, (palm_x, palm_y), 10, (0, 0, 255), -1)
 
             if burger.shape[-1] == 4:  # If burger has an alpha channel
                 alpha_burger = burger[:, :, 3] / 255.0
