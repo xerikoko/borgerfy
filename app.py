@@ -15,8 +15,9 @@ app.logger.setLevel(logging.DEBUG)  # Ensure Flask logs debug messages
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=True, 
-    max_num_hands=4,  # Increase hand detection limit
-    min_detection_confidence=0.2  # Lower confidence to detect more hands
+    max_num_hands=6,  # Allow more hands to be detected
+    min_detection_confidence=0.1,  # Lower confidence threshold
+    min_tracking_confidence=0.1  # Improve detection over multiple frames
 )
 mp_draw = mp.solutions.drawing_utils
 
