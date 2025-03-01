@@ -25,10 +25,10 @@ else:
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=True, 
-    max_num_hands=2,  # Force detection of exactly 2 hands
-    min_detection_confidence=0.005,  # Lower detection confidence for capturing faint hands
-    min_tracking_confidence=0.005,
-    model_complexity=1  # Improve accuracy on different hand angles
+    max_num_hands=2,  # Ensure 2 hands are processed
+    min_detection_confidence=0.002,  # Lower the threshold slightly
+    min_tracking_confidence=0.002,
+    model_complexity=1
 )
 mp_draw = mp.solutions.drawing_utils
 
@@ -101,8 +101,8 @@ def upload():
         for i, hand in enumerate(results.multi_hand_landmarks):
             x, y = int(hand.landmark[9].x * image_np.shape[1]), int(hand.landmark[9].y * image_np.shape[0])
             
-            # **Ignore detections below the halfway point of the image**
-            if y > image_np.shape[0] // 2:
+            # Adjust the threshold to be more lenient
+            if y > image_np.shape[0] * 0.75:  # Ignore only detections that are very low (legs, knees)
                 print(f"⚠️ Skipping detection: Landmark at ({x}, {y}) appears too low in the image!", flush=True)
                 logging.debug(f"Skipping detection: Landmark at ({x}, {y}) appears too low in the image!")
                 continue  # Skip false hand detections
