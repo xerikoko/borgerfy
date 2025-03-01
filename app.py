@@ -25,9 +25,9 @@ else:
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=True, 
-    max_num_hands=2,  # Force detection of up to 2 hands
-    min_detection_confidence=0.01,  # Reduce confidence to allow more detections
-    min_tracking_confidence=0.01,
+    max_num_hands=2,  # Force detection of exactly 2 hands
+    min_detection_confidence=0.005,  # Lower detection confidence for capturing faint hands
+    min_tracking_confidence=0.005,
     model_complexity=1  # Improve accuracy on different hand angles
 )
 mp_draw = mp.solutions.drawing_utils
