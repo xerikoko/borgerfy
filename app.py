@@ -46,9 +46,9 @@ def overlay_burger(image, hand_landmarks):
     burger = cv2.cvtColor(burger, cv2.COLOR_BGRA2RGBA)
 
     for i, hand in enumerate(hand_landmarks):
-        # **Fix Burger Placement: Calculate palm center (Midpoint between wrist & palm base)**
-        palm_x = int((hand.landmark[0].x + hand.landmark[9].x) / 2 * image.shape[1])
-        palm_y = int((hand.landmark[0].y + hand.landmark[9].y) / 2 * image.shape[0])
+        # **Improve Palm Detection Accuracy**
+        palm_x = int((hand.landmark[0].x + hand.landmark[5].x + hand.landmark[9].x) / 3 * image.shape[1])
+        palm_y = int((hand.landmark[0].y + hand.landmark[5].y + hand.landmark[9].y) / 3 * image.shape[0])
 
         print(f"👉 Hand {i+1} detected at: Palm center ({palm_x}, {palm_y})", flush=True)
         logging.debug(f"Hand {i+1} detected at: Palm center ({palm_x}, {palm_y})")
@@ -100,6 +100,13 @@ def upload():
 
         for i, hand in enumerate(results.multi_hand_landmarks):
             x, y = int(hand.landmark[9].x * image_np.shape[1]), int(hand.landmark[9].y * image_np.shape[0])
+            
+            # **Ignore detections below the halfway point of the image**
+            if y > image_np.shape[0] // 2:
+                print(f"⚠️ Skipping detection: Landmark at ({x}, {y}) appears too low in the image!", flush=True)
+                logging.debug(f"Skipping detection: Landmark at ({x}, {y}) appears too low in the image!")
+                continue  # Skip false hand detections
+
             print(f"👉 Hand {i+1} detected at: ({x}, {y})", flush=True)
             logging.debug(f"Hand {i+1} detected at: ({x}, {y})")
 
