@@ -29,7 +29,7 @@
             formData.append('image', fileInput.files[0]);
 
             try {
-                const response = await fetch('https://your-render-api-url.com/upload', {
+                const response = await fetch('https://borgerfy.onrender.com', {
                     method: 'POST',
                     body: formData
                 });
