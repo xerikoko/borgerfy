@@ -35,13 +35,16 @@ def overlay_burger(image, hand_landmarks):
     print("🔍 Overlaying burger on detected hands...", flush=True)
     logging.debug("Overlaying burger on detected hands...")
 
-    burger = cv2.imread(BURGER_PATH, cv2.IMREAD_UNCHANGED)  # Ensure transparency support
+    burger = cv2.imread(BURGER_PATH, cv2.IMREAD_UNCHANGED)  # Load with transparency
     if burger is None:
         print("❌ ERROR: Burger image not found!", flush=True)
         logging.error("Burger image not found!")
         return image
 
-    burger = cv2.resize(burger, (150, 150))  # Resize burger for better fit
+    # Convert from BGR to RGB (Fixes blue tint issue)
+    burger = cv2.cvtColor(burger, cv2.COLOR_BGRA2RGBA)
+
+    burger = cv2.resize(burger, (150, 150))  # Resize for better fit
 
     for i, hand in enumerate(hand_landmarks):
         x, y = int(hand.landmark[9].x * image.shape[1]), int(hand.landmark[9].y * image.shape[0])
