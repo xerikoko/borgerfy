@@ -46,9 +46,9 @@ def overlay_burger(image, hand_landmarks):
     burger = cv2.cvtColor(burger, cv2.COLOR_BGRA2RGBA)
 
     for i, hand in enumerate(hand_landmarks):
-        # **Improve Palm Detection Accuracy**
-        palm_x = int((hand.landmark[0].x + hand.landmark[5].x + hand.landmark[9].x) / 3 * image.shape[1])
-        palm_y = int((hand.landmark[0].y + hand.landmark[5].y + hand.landmark[9].y) / 3 * image.shape[0])
+        # Improve palm center calculation using multiple landmarks
+        palm_x = int((hand.landmark[0].x + hand.landmark[5].x + hand.landmark[9].x + hand.landmark[13].x) / 4 * image.shape[1])
+        palm_y = int((hand.landmark[0].y + hand.landmark[5].y + hand.landmark[9].y + hand.landmark[13].y) / 4 * image.shape[0])
 
         print(f"👉 Hand {i+1} detected at: Palm center ({palm_x}, {palm_y})", flush=True)
         logging.debug(f"Hand {i+1} detected at: Palm center ({palm_x}, {palm_y})")
@@ -102,7 +102,7 @@ def upload():
             x, y = int(hand.landmark[9].x * image_np.shape[1]), int(hand.landmark[9].y * image_np.shape[0])
             
             # Adjust the threshold to be more lenient
-            if y > image_np.shape[0] * 0.75:  # Ignore only detections that are very low (legs, knees)
+            if y > image_np.shape[0] * 0.6:  # Ignore only detections that are very low (legs, knees)
                 print(f"⚠️ Skipping detection: Landmark at ({x}, {y}) appears too low in the image!", flush=True)
                 logging.debug(f"Skipping detection: Landmark at ({x}, {y}) appears too low in the image!")
                 continue  # Skip false hand detections
