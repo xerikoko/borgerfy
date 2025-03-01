@@ -1,9 +1,9 @@
 import logging
+import os
 from flask import Flask, request, jsonify, send_file
 import cv2
 import numpy as np
 import mediapipe as mp
-import os
 from PIL import Image
 
 # Configure logging for better debugging
@@ -11,6 +11,16 @@ log_file = "debug.log"
 logging.basicConfig(filename=log_file, level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)  # Ensure Flask logs debug messages
+
+BURGER_PATH = "static/burger.png"  # Ensure burger is placed inside /static/
+
+# Check if burger image exists at startup
+if not os.path.exists(BURGER_PATH):
+    print(f"❌ ERROR: {BURGER_PATH} not found in the server!", flush=True)
+    logging.error(f"Burger image not found at {BURGER_PATH}!")
+else:
+    print(f"✅ Burger image found at {BURGER_PATH}", flush=True)
+    logging.debug(f"Burger image found at {BURGER_PATH}")
 
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
@@ -20,8 +30,6 @@ hands = mp_hands.Hands(
     min_tracking_confidence=0.1  # Improve detection over multiple frames
 )
 mp_draw = mp.solutions.drawing_utils
-
-BURGER_PATH = "burger.png"  # Path to burger image
 
 def overlay_burger(image, hand_landmarks):
     print("🔍 Overlaying burger on detected hands...", flush=True)
@@ -84,7 +92,6 @@ def upload():
         print(f"✅ Hands detected! Number of hands: {len(results.multi_hand_landmarks)}", flush=True)
         logging.debug(f"Hands detected! Number of hands: {len(results.multi_hand_landmarks)}")
 
-        # Debugging: Print each hand's coordinates
         for i, hand in enumerate(results.multi_hand_landmarks):
             x, y = int(hand.landmark[9].x * image_np.shape[1]), int(hand.landmark[9].y * image_np.shape[0])
             print(f"👉 Hand {i+1} detected at: ({x}, {y})", flush=True)
@@ -101,11 +108,6 @@ def upload():
     logging.debug("Image processing complete. Sending response...")
 
     return send_file(output_path, mimetype='image/png')
-
-@app.route("/logs", methods=["GET"])
-def get_logs():
-    with open(log_file, "r") as f:
-        return "<pre>" + f.read() + "</pre>"
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))  # Use Render's assigned port
