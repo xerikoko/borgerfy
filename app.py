@@ -12,7 +12,7 @@ logging.basicConfig(filename=log_file, level=logging.DEBUG, format="%(asctime)s 
 app = Flask(__name__)
 app.logger.setLevel(logging.DEBUG)  # Ensure Flask logs debug messages
 
-BURGER_PATH = "static/burger.png"  # Ensure burger is placed inside /static/
+BURGER_PATH = "static/cleaned_burger.png"  # Path to the new transparent burger image
 
 # Check if burger image exists at startup
 if not os.path.exists(BURGER_PATH):
@@ -35,13 +35,13 @@ def overlay_burger(image, hand_landmarks):
     print("🔍 Overlaying burger on detected hands...", flush=True)
     logging.debug("Overlaying burger on detected hands...")
 
-    burger = cv2.imread(BURGER_PATH, cv2.IMREAD_UNCHANGED)
+    burger = cv2.imread(BURGER_PATH, cv2.IMREAD_UNCHANGED)  # Ensure transparency support
     if burger is None:
         print("❌ ERROR: Burger image not found!", flush=True)
         logging.error("Burger image not found!")
         return image
 
-    burger = cv2.resize(burger, (150, 150))  # Increase burger size for visibility
+    burger = cv2.resize(burger, (150, 150))  # Resize burger for better fit
 
     for i, hand in enumerate(hand_landmarks):
         x, y = int(hand.landmark[9].x * image.shape[1]), int(hand.landmark[9].y * image.shape[0])
@@ -56,14 +56,12 @@ def overlay_burger(image, hand_landmarks):
             print(f"✅ Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})", flush=True)
             logging.debug(f"Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})")
 
-            if burger.shape[-1] == 4:  # Handle transparent burger image
-                overlay = burger[:, :, :3]  # RGB
-                mask = burger[:, :, 3] / 255.0  # Alpha mask
-
-                for c in range(3):
-                    image[y1:y2, x1:x2, c] = (1 - mask) * image[y1:y2, x1:x2, c] + mask * overlay[:, :, c]
+            if burger.shape[-1] == 4:  # If burger has an alpha channel
+                alpha_burger = burger[:, :, 3] / 255.0
+                for c in range(3):  # Apply transparency correctly
+                    image[y1:y2, x1:x2, c] = (1 - alpha_burger) * image[y1:y2, x1:x2, c] + alpha_burger * burger[:, :, c]
             else:
-                image[y1:y2, x1:x2] = cv2.addWeighted(image[y1:y2, x1:x2], 0.5, burger, 0.5, 0)
+                image[y1:y2, x1:x2] = burger[:, :, :3]  # Direct paste without transparency blending
 
     return image
 
