@@ -25,9 +25,9 @@ else:
 mp_hands = mp.solutions.hands
 hands = mp_hands.Hands(
     static_image_mode=True, 
-    max_num_hands=6,  # Allow more hands to be detected
-    min_detection_confidence=0.1,  # Lower confidence threshold
-    min_tracking_confidence=0.1  # Improve detection over multiple frames
+    max_num_hands=6,  # Allow multiple hands
+    min_detection_confidence=0.05,  # Lower threshold for better detection
+    min_tracking_confidence=0.05
 )
 mp_draw = mp.solutions.drawing_utils
 
@@ -59,6 +59,9 @@ def overlay_burger(image, hand_landmarks):
         if 0 <= x1 < image.shape[1] and 0 <= x2 < image.shape[1] and 0 <= y1 < image.shape[0] and 0 <= y2 < image.shape[0]:
             print(f"✅ Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})", flush=True)
             logging.debug(f"Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})")
+
+            # Draw a red circle for debugging burger placement
+            cv2.circle(image, (palm_x, palm_y), 10, (0, 0, 255), -1)
 
             if burger.shape[-1] == 4:  # If burger has an alpha channel
                 alpha_burger = burger[:, :, 3] / 255.0
