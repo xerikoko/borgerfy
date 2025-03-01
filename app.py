@@ -41,30 +41,32 @@ def overlay_burger(image, hand_landmarks):
         logging.error("Burger image not found!")
         return image
 
-    # Convert from BGR to RGB (Fixes blue tint issue)
+    # Convert from BGR to RGBA (Fixes blue tint issue)
     burger = cv2.cvtColor(burger, cv2.COLOR_BGRA2RGBA)
 
     burger = cv2.resize(burger, (150, 150))  # Resize for better fit
 
     for i, hand in enumerate(hand_landmarks):
-        x, y = int(hand.landmark[9].x * image.shape[1]), int(hand.landmark[9].y * image.shape[0])
-        print(f"👉 Hand {i+1} detected at: ({x}, {y})", flush=True)
-        logging.debug(f"Hand {i+1} detected at: ({x}, {y})")
+        # **Ensure each hand gets a burger at two locations:**
+        for landmark_index in [0, 9]:  # Landmark 0 (Wrist) & 9 (Palm Base)
+            x, y = int(hand.landmark[landmark_index].x * image.shape[1]), int(hand.landmark[landmark_index].y * image.shape[0])
+            print(f"👉 Hand {i+1} Landmark {landmark_index} at: ({x}, {y})", flush=True)
+            logging.debug(f"Hand {i+1} Landmark {landmark_index} at: ({x}, {y})")
 
-        h, w, _ = burger.shape
-        y1, y2 = y - h // 2, y + h // 2
-        x1, x2 = x - w // 2, x + w // 2
+            h, w, _ = burger.shape
+            y1, y2 = y - h // 2, y + h // 2
+            x1, x2 = x - w // 2, x + w // 2
 
-        if 0 <= x1 < image.shape[1] and 0 <= x2 < image.shape[1] and 0 <= y1 < image.shape[0] and 0 <= y2 < image.shape[0]:
-            print(f"✅ Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})", flush=True)
-            logging.debug(f"Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})")
+            if 0 <= x1 < image.shape[1] and 0 <= x2 < image.shape[1] and 0 <= y1 < image.shape[0] and 0 <= y2 < image.shape[0]:
+                print(f"✅ Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})", flush=True)
+                logging.debug(f"Adding burger to hand {i+1} at ({x1}, {y1}) - ({x2}, {y2})")
 
-            if burger.shape[-1] == 4:  # If burger has an alpha channel
-                alpha_burger = burger[:, :, 3] / 255.0
-                for c in range(3):  # Apply transparency correctly
-                    image[y1:y2, x1:x2, c] = (1 - alpha_burger) * image[y1:y2, x1:x2, c] + alpha_burger * burger[:, :, c]
-            else:
-                image[y1:y2, x1:x2] = burger[:, :, :3]  # Direct paste without transparency blending
+                if burger.shape[-1] == 4:  # If burger has an alpha channel
+                    alpha_burger = burger[:, :, 3] / 255.0
+                    for c in range(3):  # Apply transparency correctly
+                        image[y1:y2, x1:x2, c] = (1 - alpha_burger) * image[y1:y2, x1:x2, c] + alpha_burger * burger[:, :, c]
+                else:
+                    image[y1:y2, x1:x2] = burger[:, :, :3]  # Direct paste without transparency blending
 
     return image
 
